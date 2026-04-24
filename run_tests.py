@@ -10,7 +10,13 @@ import sys
 import os
 from pathlib import Path
 
-def run_tests(test_type, verbose=False, coverage=False):
+BASE_DIR = Path(__file__).parent
+REPORTS_DIR = BASE_DIR / "reports"
+ALLURE_RESULTS_DIR = REPORTS_DIR / "allure-results"
+COVERAGE_DIR = REPORTS_DIR / "coverage"
+BENCHMARK_FILE = REPORTS_DIR / "benchmark.json"
+
+def run_tests(test_type, verbose=False, coverage=False, allure=False, benchmark=False):
     """Run the specified test suite."""
     cmd = ["pytest", "-v" if verbose else "-q"]
     
@@ -20,6 +26,9 @@ def run_tests(test_type, verbose=False, coverage=False):
             "--cov-report=term",
             "--cov-report=xml:coverage.xml"
         ])
+
+    if allure:
+        cmd.append(f"--benchmark-json={BENCHMARK_FILE}")
     
     if test_type == "all":
         cmd.append("tests/")
@@ -56,13 +65,23 @@ def main():
         action="store_true",
         help="Generate coverage report"
     )
+    parser.add_argument(
+        "--allure",
+        action="store_true",
+        help="Generate Allure report under reports/allure-results"
+    )
+    parser.add_argument(
+        "--benchmark",
+        action="store_true",
+        help="Generate benchmark report under reports/benchmark.json"
+    )
     
     args = parser.parse_args()
     
     # Ensure we're in the correct directory
     os.chdir(Path(__file__).parent)
     
-    success = run_tests(args.test_type, args.verbose, args.coverage)
+    success = run_tests(args.test_type, args.verbose, args.coverage, args.allure, args.benchmark)
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
