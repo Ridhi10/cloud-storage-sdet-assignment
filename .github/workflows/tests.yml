@@ -2,9 +2,9 @@ name: Run Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [ Ridhima_submission ]
   pull_request:
-    branches: [ main ]
+    branches: [ Ridhima_submission ]
 
 jobs:
   test:
