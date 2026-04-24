@@ -34,7 +34,7 @@ jobs:
         pytest tests/ --cov=src --cov-report=xml --cov-report=term
     
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
@@ -64,7 +64,7 @@ jobs:
         pytest tests/performance/ -v --benchmark-only --benchmark-json=benchmark.json
     
     - name: Upload benchmark results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: benchmark-results
         path: benchmark.json
