@@ -50,7 +50,6 @@ def mark_file_as_old(api_client, file_id, days_old):
     )
     assert response.status_code == 200
 
-@pytest.mark.performance
 def test_tiering_benchmark_100_files(api_client, mocker):
     """
     Benchmark tiering performance for 100 files.
@@ -119,7 +118,7 @@ def test_tiering_benchmark_100_files(api_client, mocker):
     print(f"All {NUM_FILES} files successfully moved to WARM tier")
 
 
-@pytest.mark.performance
+
 def test_repeated_tiering_run_is_idempotent(api_client, mocker):
     """
     Verify repeated tiering runs do not reprocess files unnecessarily.
@@ -159,7 +158,7 @@ def test_repeated_tiering_run_is_idempotent(api_client, mocker):
     print(f"Repeated tiering completed in {second_run_duration:.2f} sec")
 
 
-@pytest.mark.performance
+
 def test_tiering_under_parallel_admin_requests(api_client, mocker):
     """
     Verify system remains stable when multiple tiering requests
