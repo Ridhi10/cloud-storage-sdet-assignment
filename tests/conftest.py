@@ -1,14 +1,16 @@
 import io
 import uuid
 from datetime import datetime, timedelta, timezone
-
+import os
+import sys
 import pytest
 from fastapi.testclient import TestClient
 
-import src.storage_service
-from src.storage_service import *
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from src.storage_service import app, files_metadata, files_content
 #from src.storage_service import
 
+print("CONFIGS_LOADED")
 
 @pytest.fixture(scope="session")
 def api_client():
@@ -50,25 +52,25 @@ def file_factory():
 
 
 @pytest.fixture
-def small_valid_file(file_factory):
+def small_valid_file():
     """
     Example valid file above the minimum tiering threshold.
     """
-    return file_factory(2 * 1024 * 1024, name="small-valid.bin")
+    return b"a" * (512 * 1024)
 
 @pytest.fixture()
 def valid_file_bytes():
     """
     API requires at least 1 MB
     """
-    return file_factory(1 * 1024 * 1024, name="valid-file.bin")
+    return b"a" * (1024 * 1024)
 
 @pytest.fixture
-def zero_byte_file(file_factory):
+def zero_byte_file():
     """
     0-byte file payload.
     """
-    return file_factory(0, name="zero-byte.bin")
+    return b""
 
 
 @pytest.fixture
@@ -118,7 +120,7 @@ def uploaded_file(api_client, valid_file_bytes):
             )
         },
     )
-    assert response.status_code in (200, 201), response.text
+    assert response.status_code == 201, response.text
     return response.json()
 
 
@@ -195,16 +197,14 @@ def age_file():
     """
     Artificially ages a file by changing last_accessed."""
 
-    def _age(file_id: str, days_old: int):
-        target_time = datetime.now(timezone.utc) - timedelta(days=days_old)
+    def _age(file_id, days_old):
+        target_time = datetime.utcnow() - timedelta(days=days_old)
 
 
         if file_id not in files_metadata:
             raise KeyError(f"File {file_id} not found")
 
-        files_metadata[file_id]["last_accessed"] = target_time
-
-        raise NotImplementedError("Hook this into the repo's in-memory storage structure")
+        files_metadata[file_id].last_accessed = target_time
 
     return _age
 
@@ -214,18 +214,24 @@ def set_file_tier():
     """
     Forces a tier for setup-heavy tests.
     """
-
-
-
     def _set(file_id: str, tier: str):
-        if file_id not in src.storage_service.files_metadata:
+        if file_id not in files_metadata:
             raise KeyError(f"File {file_id} not found")
 
-        src.storage_service.files_metadata[file_id]["tier"] = tier
+        files_metadata[file_id]["tier"] = tier
 
         raise NotImplementedError("Hook this into the repo's tier field")
 
     return _set
+
+@pytest.fixture
+def unsafe_client():
+    """
+    Client that converts unhandled server exceptions into HTTP 500 responses,
+    which is useful for fault injection tests.
+    """
+    with TestClient(app, raise_server_exceptions=False) as client:
+        yield client
 
 
 @pytest.fixture(autouse=True)
