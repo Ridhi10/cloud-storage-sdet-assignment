@@ -2,9 +2,9 @@ name: Run Tests
 
 on:
   push:
-    branches: [ Ridhima_submission ]
+    branches: [ main ]
   pull_request:
-    branches: [ Ridhima_submission ]
+    branches: [ main ]
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -44,6 +44,7 @@ jobs:
 
   performance:
     needs: test
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     
     steps:
