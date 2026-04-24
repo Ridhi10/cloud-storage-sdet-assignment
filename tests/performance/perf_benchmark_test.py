@@ -50,7 +50,7 @@ def mark_file_as_old(api_client, file_id, days_old):
     )
     assert response.status_code == 200
 
-def test_tiering_benchmark_100_files(api_client, mocker):
+def test_tiering_benchmark_100_files(api_client, benchmark):
     """
     Benchmark tiering performance for 100 files.
 
@@ -84,9 +84,15 @@ def test_tiering_benchmark_100_files(api_client, mocker):
     for file_id in uploaded_file_ids:
         mark_file_as_old(api_client, file_id, days_old=31)
 
+    def run_tiering():
+        return api_client.post('admin/tiering/run')
+
+
+
     tiering_start = time.perf_counter()
 
-    tiering_response = api_client.post("/admin/tiering/run")
+    tiering_response = benchmark(run_tiering)
+
 
     tiering_duration = time.perf_counter() - tiering_start
 
