@@ -1,6 +1,8 @@
 from src.storage_service import StorageTier
 from tests.conftest import *
 
+
+'''This is an expected failure'''
 @pytest.mark.manual
 @pytest.mark.xfail(reason="Known bug: COLD files are not promoted after recent access")
 def test_cold_file_should_promote_to_warm_after_recent_access(api_client):
